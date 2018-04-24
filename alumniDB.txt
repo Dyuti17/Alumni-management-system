@@ -1,0 +1,71 @@
+create table Alumni_personalinfo(
+fname varchar(30),
+lname varchar(30),
+dob date,
+sex char,
+phno integer(11),
+address varchar(30),
+usn varchar(10),
+email varchar(30),
+loginname varchar(30),
+pwd varchar(10),
+primary key(usn,loginname));
+
+create table Alumni_academicinfo(
+usn varchar(10),
+joinyear integer(4),
+passoutyear integer(4),
+profession varchar(30),
+updatetime timestamp,
+primary key(usn),
+foreign key(usn) references Alumni_personalinfo(usn) on delete cascade);
+
+create table events(
+usn varchar(10),
+eventid integer AUTO_INCREMENT,
+eventname varchar(30),
+eventtime varchar(5),
+venue varchar(30),
+eventdate date,
+daysleft integer(4),
+primary key(eventid),
+foreign key(usn) references alumni_personalinfo(usn));
+
+create table achievements(
+usn varchar(10),
+achievements varchar(200),
+primary key(usn,achievements),
+foreign key(usn) references Alumni_personalinfo(usn) on delete cascade);
+
+Trigger:
+
+create trigger updatetrig
+before update on alumni_academicinfo
+for each row
+SET NEW.updatetime=now();
+
+Stored Procedure:
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `daysremaining`()
+BEGIN
+declare daysl integer(4);
+declare sysdate date;
+declare edate date;
+declare Eid integer(11);
+declare done integer(1);
+DECLARE c1 CURSOR FOR SELECT `eventid`,`eventdate` from `events`;
+declare continue handler for not found set done=1;
+set done=0;
+	open c1;
+    d_loop:loop
+		fetch c1 into Eid,edate;
+        if done=1 then leave d_loop;
+        end if;
+        set daysl=DATEDIFF(edate,CURDATE());
+        update events set `daysleft`=daysl where `eventid`=Eid;
+	 end loop;
+     close c1;
+END
+
+
+insert into Alumni_personalinfo values('Dyuti','SR','1997-04-17','F',953894839,'Bangalore','1rn15is025','dyuti1997@gmail.com','Dyuti17','hello');
